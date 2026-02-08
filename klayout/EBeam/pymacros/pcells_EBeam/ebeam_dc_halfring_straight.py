@@ -34,6 +34,7 @@ class ebeam_dc_halfring_straight(pya.PCellDeclarationHelper):
             "devrec", self.TypeLayer, "DevRec Layer", default=TECHNOLOGY["DevRec"]
         )
         self.param("textl", self.TypeLayer, "Text Layer", default=TECHNOLOGY["Text"])
+        self.param("bus_wg_true", self.TypeBoolean, "Add bus waveguide", default=True)
 
     def display_text_impl(self):
         # Provide a descriptive text for the cell
@@ -62,6 +63,8 @@ class ebeam_dc_halfring_straight(pya.PCellDeclarationHelper):
         dbu = self.layout.dbu
         ly = self.layout
         shapes = self.cell.shapes
+        bus_wg_true = self.bus_wg_true
+        
 
         LayerSiN = ly.layer(self.silayer)
         LayerPinRecN = ly.layer(self.pinrec)
@@ -121,35 +124,36 @@ class ebeam_dc_halfring_straight(pya.PCellDeclarationHelper):
             shapes(LayerSiN).insert(wg1)
 
         # Create the waveguide
-        wg1 = Box(-r - w / 2 - w - Lc / 2, -w / 2, r + w / 2 + w + Lc / 2, w / 2)
-        shapes(LayerSiN).insert(wg1)
+        if bus_wg_true:
+            wg1 = Box(-r - w / 2 - w - Lc / 2, -w / 2, r + w / 2 + w + Lc / 2, w / 2)
+            shapes(LayerSiN).insert(wg1)
 
-        # Pins on the bus waveguide side:
-        pin = Path(
-            [
-                Point(-r - w / 2 - w + PIN_LENGTH / 2 - Lc / 2, 0),
-                Point(-r - w / 2 - w - PIN_LENGTH / 2 - Lc / 2, 0),
-            ],
-            w,
-        )
-        shapes(LayerPinRecN).insert(pin)
-        t = Trans(Trans.R0, -r - w / 2 - w - Lc / 2, 0)
-        text = Text("pin1", t)
-        shape = shapes(LayerPinRecN).insert(text)
-        shape.text_size = 0.4 / dbu
+            # Pins on the bus waveguide side:
+            pin = Path(
+                [
+                    Point(-r - w / 2 - w + PIN_LENGTH / 2 - Lc / 2, 0),
+                    Point(-r - w / 2 - w - PIN_LENGTH / 2 - Lc / 2, 0),
+                ],
+                w,
+            )
+            shapes(LayerPinRecN).insert(pin)
+            t = Trans(Trans.R0, -r - w / 2 - w - Lc / 2, 0)
+            text = Text("pin1", t)
+            shape = shapes(LayerPinRecN).insert(text)
+            shape.text_size = 0.4 / dbu
 
-        pin = Path(
-            [
-                Point(r + w / 2 + w - PIN_LENGTH / 2 + Lc / 2, 0),
-                Point(r + w / 2 + w + PIN_LENGTH / 2 + Lc / 2, 0),
-            ],
-            w,
-        )
-        shapes(LayerPinRecN).insert(pin)
-        t = Trans(Trans.R0, r + w / 2 + w + Lc / 2, 0)
-        text = Text("pin3", t)
-        shape = shapes(LayerPinRecN).insert(text)
-        shape.text_size = 0.4 / dbu
+            pin = Path(
+                [
+                    Point(r + w / 2 + w - PIN_LENGTH / 2 + Lc / 2, 0),
+                    Point(r + w / 2 + w + PIN_LENGTH / 2 + Lc / 2, 0),
+                ],
+                w,
+            )
+            shapes(LayerPinRecN).insert(pin)
+            t = Trans(Trans.R0, r + w / 2 + w + Lc / 2, 0)
+            text = Text("pin3", t)
+            shape = shapes(LayerPinRecN).insert(text)
+            shape.text_size = 0.4 / dbu
 
         # Merge all the waveguide shapes, to avoid any small gaps
         layer_temp = self.layout.layer(LayerInfo(913, 0))
